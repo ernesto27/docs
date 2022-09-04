@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/ernesto27/docs/db"
 	"github.com/ernesto27/docs/routers"
@@ -18,7 +19,7 @@ func main() {
 	}
 
 	myDb := db.Mysql{}
-	myDb.New()
+	myDb.New(os.Getenv("DATABASE_USER"), os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_PORT"), os.Getenv("DATABASE_NAME"))
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")

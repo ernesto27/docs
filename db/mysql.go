@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	"github.com/ernesto27/docs/structs"
 	_ "github.com/go-sql-driver/mysql"
@@ -13,10 +12,10 @@ type Mysql struct {
 	db sql.DB
 }
 
-func (m *Mysql) New() (error, *sql.DB) {
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", os.Getenv("DATABASE_USER"),
-		os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"),
-		os.Getenv("DATABASE_PORT"), os.Getenv("DATABASE_NAME"))
+func (m *Mysql) New(user string, password string, host string, port string, name string) (error, *sql.DB) {
+
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user,
+		password, host, port, name)
 	db, err := sql.Open("mysql", dataSourceName)
 	defer db.Close()
 
