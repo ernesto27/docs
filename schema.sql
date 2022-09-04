@@ -1,7 +1,7 @@
-CREATE TABLE docs {
-    id INT PRIMARY KEY,
+CREATE TABLE docs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-};
+);
