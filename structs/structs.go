@@ -33,3 +33,8 @@ type Command struct {
 	Body    string `json:"body"`
 	ID      int    `json:"id"`
 }
+
+type ResponseDocByID struct {
+	Command string `json:"command"`
+	Doc     Doc    `json:"doc"`
+}

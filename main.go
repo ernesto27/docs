@@ -41,5 +41,8 @@ func main() {
 		routers.WebsocketHandler(c.Writer, c.Request, c, &myDb)
 	})
 
+	go routers.BroadcastDocByID()
+
 	r.Run()
+
 }

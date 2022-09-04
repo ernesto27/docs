@@ -20,3 +20,7 @@ func (m *Mock) CreateDoc(doc structs.Doc) error {
 func (m *Mock) GetDocByID(ID int) (structs.Doc, error) {
 	return structs.Doc{}, nil
 }
+
+func (m *Mock) UpdateDocByID(ID int, body string) (int, error) {
+	return 0, nil
+}

@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/ernesto27/docs/interfaces"
 	"github.com/ernesto27/docs/structs"
@@ -29,6 +31,10 @@ func init() {
 
 func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db interfaces.DocDB) {
 	fmt.Println("Handle websocket connection")
+
+	rand.Seed(time.Now().UnixNano())
+	id := rand.Int()
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("Error during connection upgrade:", err)
@@ -39,7 +45,7 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 	client := structs.Client{
 		WebSocketConn: conn,
 	}
-	wss.Clients[10] = client
+	wss.Clients[id] = client
 
 	for {
 		_, p, err := conn.ReadMessage()
@@ -64,18 +70,31 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println("DOC", doc)
-			errWrite := wss.Clients[10].WebSocketConn.WriteJSON(doc)
-			if errWrite != nil {
-				log.Printf("error: %v", err)
-				wss.Clients[10].WebSocketConn.Close()
-				// delete(clients, wss.Clients[10].WebSocketConn)
-			}
+			broadcastDoc <- doc
 
 			break
 		case "update-doc":
 			fmt.Println("UPDATE DOC")
 			break
+		}
+	}
+}
+
+func BroadcastDocByID() {
+	for {
+		doc := <-broadcastDoc
+		fmt.Println("BROADCAST DOC", doc)
+		responseDocByID := structs.ResponseDocByID{
+			Command: "get-doc",
+			Doc:     doc,
+		}
+		for _, client := range wss.Clients {
+			err := client.WebSocketConn.WriteJSON(responseDocByID)
+			if err != nil {
+				log.Printf("error: %v", err)
+				client.WebSocketConn.Close()
+				// delete(clients, wss.Clients[10].WebSocketConn)
+			}
 		}
 	}
 }

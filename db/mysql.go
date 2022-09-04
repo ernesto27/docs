@@ -41,3 +41,15 @@ func (m *Mysql) GetDocByID(ID int) (structs.Doc, error) {
 	err := row.Scan(&doc.ID, &doc.Title, &doc.Body)
 	return doc, err
 }
+
+func (m *Mysql) UpdateDocByID(ID int, body string) (int, error) {
+	query := "UPDATE docs SET body = ? WHERE id = ?"
+	res, err := m.db.Exec(query, body, ID)
+
+	rowsAffected, errRows := res.RowsAffected()
+	if errRows != nil {
+		return 0, errRows
+	}
+
+	return int(rowsAffected), err
+}
