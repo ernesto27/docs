@@ -1,6 +1,10 @@
 package structs
 
-import "time"
+import (
+	"time"
+
+	"github.com/gorilla/websocket"
+)
 
 type Doc struct {
 	ID        int       `json:"id"`
@@ -13,4 +17,18 @@ type Doc struct {
 type ResponseApi struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
+}
+
+type Client struct {
+	ID            int
+	WebSocketConn *websocket.Conn
+}
+
+type WebsocketServer struct {
+	Clients map[int]Client
+}
+
+type Command struct {
+	Command string `json:"command"`
+	Body    string `json:"body"`
 }

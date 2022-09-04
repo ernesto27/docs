@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -27,6 +28,16 @@ func main() {
 	})
 	r.POST("/docs/create", func(c *gin.Context) {
 		routers.CreateDoc(&myDb, c)
+	})
+
+	r.GET("/docs/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		fmt.Println(id)
+		c.HTML(http.StatusOK, "doc.html", nil)
+	})
+
+	r.GET("/ws", func(c *gin.Context) {
+		routers.WebsocketHandler(c.Writer, c.Request, c)
 	})
 
 	r.Run()
