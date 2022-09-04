@@ -31,4 +31,5 @@ type WebsocketServer struct {
 type Command struct {
 	Command string `json:"command"`
 	Body    string `json:"body"`
+	ID      int    `json:"id"`
 }

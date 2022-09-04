@@ -34,3 +34,11 @@ func (m *Mysql) CreateDoc(doc structs.Doc) error {
 	_, err := m.db.Exec(query, doc.Title, doc.Body)
 	return err
 }
+
+func (m *Mysql) GetDocByID(ID int) (structs.Doc, error) {
+	query := "SELECT id, title, body FROM docs WHERE id = ?"
+	row := m.db.QueryRow(query, ID)
+	doc := structs.Doc{}
+	err := row.Scan(&doc.ID, &doc.Title, &doc.Body)
+	return doc, err
+}

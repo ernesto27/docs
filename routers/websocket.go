@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ernesto27/docs/interfaces"
 	"github.com/ernesto27/docs/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -18,13 +19,15 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+var broadcastDoc = make(chan structs.Doc)
+
 func init() {
 	wss = structs.WebsocketServer{
 		Clients: make(map[int]structs.Client),
 	}
 }
 
-func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context) {
+func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db interfaces.DocDB) {
 	fmt.Println("Handle websocket connection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -56,9 +59,22 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context) {
 		switch command.Command {
 		case "get-doc":
 			fmt.Println("GET DOC")
+			// TODO CHECK ID IS INT, PREVENT CRASH
+			doc, err := db.GetDocByID(command.ID)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println("DOC", doc)
+			errWrite := wss.Clients[10].WebSocketConn.WriteJSON(doc)
+			if errWrite != nil {
+				log.Printf("error: %v", err)
+				wss.Clients[10].WebSocketConn.Close()
+				// delete(clients, wss.Clients[10].WebSocketConn)
+			}
+
 			break
-		case "create-doc":
-			fmt.Println("CREATE DOC")
+		case "update-doc":
+			fmt.Println("UPDATE DOC")
 			break
 		}
 	}

@@ -37,7 +37,7 @@ func main() {
 	})
 
 	r.GET("/ws", func(c *gin.Context) {
-		routers.WebsocketHandler(c.Writer, c.Request, c)
+		routers.WebsocketHandler(c.Writer, c.Request, c, &myDb)
 	})
 
 	r.Run()

@@ -16,3 +16,7 @@ func (m *Mock) New() (error, *sql.DB) {
 func (m *Mock) CreateDoc(doc structs.Doc) error {
 	return nil
 }
+
+func (m *Mock) GetDocByID(ID int) (structs.Doc, error) {
+	return structs.Doc{}, nil
+}
