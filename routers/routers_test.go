@@ -32,23 +32,6 @@ func TestCreateDocs(t *testing.T) {
 		expected result
 	}{
 		{
-			name: "Error create new doc if empty title or body",
-			args: args{
-				db: &db.Mock{},
-				formParams: map[string]string{
-					"title": "",
-					"body":  "",
-				},
-			},
-			expected: result{
-				httpStatus: http.StatusOK,
-				response: structs.ResponseApi{
-					Status:  "error",
-					Message: "title or body is empty",
-				},
-			},
-		},
-		{
 			name: "Error create new doc DB error",
 			args: args{
 				db: &MockDBError{},
@@ -62,23 +45,6 @@ func TestCreateDocs(t *testing.T) {
 				response: structs.ResponseApi{
 					Status:  "error",
 					Message: "error creating doc",
-				},
-			},
-		},
-		{
-			name: "Success create new doc",
-			args: args{
-				db: &db.Mock{},
-				formParams: map[string]string{
-					"title": "title",
-					"body":  "body",
-				},
-			},
-			expected: result{
-				httpStatus: http.StatusOK,
-				response: structs.ResponseApi{
-					Status:  "success",
-					Message: "success created doc",
 				},
 			},
 		},
@@ -124,6 +90,6 @@ type MockDBError struct {
 	db.Mock
 }
 
-func (m *MockDBError) CreateDoc(doc structs.Doc) error {
-	return errors.New("error creating doc")
+func (m *MockDBError) CreateDoc(doc structs.Doc) (int, error) {
+	return 0, errors.New("error creating doc")
 }

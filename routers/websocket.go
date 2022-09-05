@@ -68,13 +68,28 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 			// TODO CHECK ID IS INT, PREVENT CRASH
 			doc, err := db.GetDocByID(command.ID)
 			if err != nil {
+				// TODO SEND ERROR MESSAGE
 				fmt.Println(err)
 			}
+			// TODO SEND ONLY TO USER CONNECT FIRST TIME
 			broadcastDoc <- doc
 
 			break
 		case "update-doc":
 			fmt.Println("UPDATE DOC")
+			rows, err := db.UpdateDocByID(command.ID, command.Body)
+			if rows == 0 || err != nil {
+				// TODO SEND ERROR MESSAGE
+				fmt.Println(err)
+			}
+
+			doc, err := db.GetDocByID(command.ID)
+			if err != nil {
+				// TODO SEND ERROR MESSAGE
+				fmt.Println(err)
+			}
+			broadcastDoc <- doc
+
 			break
 		}
 	}
@@ -93,7 +108,7 @@ func BroadcastDocByID() {
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.WebSocketConn.Close()
-				// delete(clients, wss.Clients[10].WebSocketConn)
+				// delete(clients, wss.Clients[1].WebSocketConn)
 			}
 		}
 	}

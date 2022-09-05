@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <h1>Detail doc <span id="doc-id">{{ .id }}</span></h1>
+
+    <textarea id="textarea" onkeyup="onKeyUp(this)"></textarea>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8080/ws");
+        const textarea = document.getElementById("textarea");
+        const docID = document.getElementById("doc-id").innerText;
+
+        socket.addEventListener('open', (event) => {
+            console.log(event)
+            socket.send(JSON.stringify({
+                "command": "get-doc",
+                "id": parseInt(docID),
+            }));
+        });
+
+        socket.addEventListener('message', (event) => {
+            const data = JSON.parse(event.data);
+            textarea.value = data.doc.body;
+
+        });
+
+        function onKeyUp(e) {
+            socket.send(JSON.stringify({
+                "command": "update-doc",
+                "id": parseInt(docID),
+                "body": e.value,
+            }));
+        }
+        
+
+        
+    </script>
+    
+</body>
+</html>

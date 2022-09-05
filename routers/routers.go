@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ernesto27/docs/interfaces"
@@ -9,25 +10,11 @@ import (
 )
 
 func CreateDoc(db interfaces.DocDB, c *gin.Context) {
-	// Validate form params
-	title := c.PostForm("title")
-	body := c.PostForm("body")
-
-	if title == "" || body == "" {
-		c.JSON(http.StatusOK,
-			structs.ResponseApi{
-				Status:  "error",
-				Message: "title or body is empty",
-			},
-		)
-		return
-	}
-
 	doc := structs.Doc{
 		Title: c.PostForm("title"),
 		Body:  c.PostForm("body"),
 	}
-	err := db.CreateDoc(doc)
+	id, err := db.CreateDoc(doc)
 
 	if err != nil {
 		c.JSON(http.StatusOK, structs.ResponseApi{
@@ -36,9 +23,5 @@ func CreateDoc(db interfaces.DocDB, c *gin.Context) {
 		})
 		return
 	}
-
-	c.JSON(http.StatusOK, structs.ResponseApi{
-		Status:  "success",
-		Message: "success created doc",
-	})
+	c.Redirect(http.StatusFound, "/docs/"+fmt.Sprint(id))
 }

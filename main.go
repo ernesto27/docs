@@ -34,7 +34,9 @@ func main() {
 	r.GET("/docs/:id", func(c *gin.Context) {
 		id := c.Param("id")
 		fmt.Println(id)
-		c.HTML(http.StatusOK, "doc.html", nil)
+		c.HTML(http.StatusOK, "doc.tmpl", gin.H{
+			"id": id,
+		})
 	})
 
 	r.GET("/ws", func(c *gin.Context) {

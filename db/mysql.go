@@ -28,10 +28,14 @@ func (m *Mysql) New(user string, password string, host string, port string, name
 	return nil, db
 }
 
-func (m *Mysql) CreateDoc(doc structs.Doc) error {
+func (m *Mysql) CreateDoc(doc structs.Doc) (int, error) {
 	query := "INSERT INTO docs (title, body) VALUES (?, ?)"
-	_, err := m.db.Exec(query, doc.Title, doc.Body)
-	return err
+	res, err := m.db.Exec(query, doc.Title, doc.Body)
+	id, errID := res.LastInsertId()
+	if errID != nil {
+		return 0, errID
+	}
+	return int(id), err
 }
 
 func (m *Mysql) GetDocByID(ID int) (structs.Doc, error) {
