@@ -90,8 +90,7 @@ func TestGetDocById(t *testing.T) {
 
 }
 
-func TestUpdateDocById(t *testing.T) {
-
+func TestUpdateDocBodyById(t *testing.T) {
 	type args struct {
 		ID    int
 		Body  string
@@ -137,7 +136,7 @@ func TestUpdateDocById(t *testing.T) {
 				myDb.db.Exec(tt.args.query)
 			}
 
-			rows, err := myDb.UpdateDocByID(tt.args.ID, tt.args.Body)
+			rows, err := myDb.UpdateDocBodyByID(tt.args.ID, tt.args.Body)
 
 			if rows != tt.expected.rows {
 				t.Errorf("UpdateDocByID() = %v, want %v", rows, tt.expected.rows)
@@ -150,5 +149,65 @@ func TestUpdateDocById(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestUpdateDocTitleById(t *testing.T) {
+	type args struct {
+		ID    int
+		Title string
+		query string
+	}
+
+	type result struct {
+		rows int
+		err  error
+	}
+
+	tests := []struct {
+		name     string
+		args     args
+		expected result
+	}{
+		{
+			name: "Get rows affected = 0 if ID is doc does not exist",
+			args: args{
+				ID: -9999,
+			},
+			expected: result{
+				rows: 0,
+			},
+		},
+		{
+			name: "Get rows affected = 1 if ID is doc exists on DB",
+			args: args{
+				ID:    1,
+				Title: "title1 updated",
+				query: "INSERT INTO docs (title, body) VALUES ('title1', 'body1')",
+			},
+			expected: result{
+				rows: 1,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			myDb.db.Exec("TRUNCATE TABLE docs")
+			if tt.args.query != "" {
+				myDb.db.Exec(tt.args.query)
+			}
+
+			rows, err := myDb.UpdateDocTitleByID(tt.args.ID, tt.args.Title)
+
+			if rows != tt.expected.rows {
+				t.Errorf("UpdateDocTitleByID() = %v, want %v", rows, tt.expected.rows)
+			}
+
+			if err != nil {
+				if err.Error() != tt.expected.err.Error() {
+					t.Errorf("UpdateDocTitleByID() = %v, want %v", err, tt.expected.err)
+				}
+			}
+		})
+	}
 }

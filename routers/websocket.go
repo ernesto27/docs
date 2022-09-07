@@ -70,26 +70,45 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 			if err != nil {
 				// TODO SEND ERROR MESSAGE
 				fmt.Println(err)
+			} else {
+				// TODO SEND ONLY TO USER CONNECT FIRST TIME
+				broadcastDoc <- doc
 			}
-			// TODO SEND ONLY TO USER CONNECT FIRST TIME
-			broadcastDoc <- doc
 
 			break
-		case "update-doc":
+		case "update-doc-body":
 			fmt.Println("UPDATE DOC")
-			rows, err := db.UpdateDocByID(command.ID, command.Body)
+			rows, err := db.UpdateDocBodyByID(command.ID, command.Body)
 			if rows == 0 || err != nil {
 				// TODO SEND ERROR MESSAGE
 				fmt.Println(err)
+			} else {
+				doc, err := db.GetDocByID(command.ID)
+				if err != nil {
+					// TODO SEND ERROR MESSAGE
+					fmt.Println(err)
+					return
+				} else {
+					broadcastDoc <- doc
+				}
 			}
+			break
 
-			doc, err := db.GetDocByID(command.ID)
-			if err != nil {
+		case "update-doc-title":
+			fmt.Println("UPDATE DOC TITLE")
+			rows, err := db.UpdateDocTitleByID(command.ID, command.Title)
+			if rows == 0 || err != nil {
 				// TODO SEND ERROR MESSAGE
 				fmt.Println(err)
+			} else {
+				doc, err := db.GetDocByID(command.ID)
+				if err != nil {
+					// TODO SEND ERROR MESSAGE
+					fmt.Println(err)
+				} else {
+					broadcastDoc <- doc
+				}
 			}
-			broadcastDoc <- doc
-
 			break
 		}
 	}

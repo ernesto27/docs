@@ -46,14 +46,33 @@ func (m *Mysql) GetDocByID(ID int) (structs.Doc, error) {
 	return doc, err
 }
 
-func (m *Mysql) UpdateDocByID(ID int, body string) (int, error) {
+func (m *Mysql) UpdateDocBodyByID(ID int, body string) (int, error) {
 	query := "UPDATE docs SET body = ? WHERE id = ?"
 	res, err := m.db.Exec(query, body, ID)
+	if err != nil {
+		return 0, err
+	}
 
 	rowsAffected, errRows := res.RowsAffected()
 	if errRows != nil {
 		return 0, errRows
 	}
 
-	return int(rowsAffected), err
+	return int(rowsAffected), nil
+}
+
+func (m *Mysql) UpdateDocTitleByID(ID int, title string) (int, error) {
+	query := "UPDATE docs SET title = ? WHERE id = ?"
+	res, err := m.db.Exec(query, title, ID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, errRows := res.RowsAffected()
+	if errRows != nil {
+		return 0, errRows
+	}
+
+	return int(rowsAffected), nil
 }

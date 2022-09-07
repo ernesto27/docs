@@ -10,10 +10,13 @@
 
     <h1>Detail doc <span id="doc-id">{{ .id }}</span></h1>
 
-    <textarea id="textarea" onkeyup="onKeyUp(this)"></textarea>
+    <input type="text" id="title" onkeyup="onKeyUpTitle(this)"/>
+    <br /><br />
+    <textarea id="textarea" onkeyup="onKeyUpBody(this)"></textarea>
 
     <script>
         const socket = new WebSocket("ws://localhost:8080/ws");
+        const title= document.getElementById("title");
         const textarea = document.getElementById("textarea");
         const docID = document.getElementById("doc-id").innerText;
 
@@ -28,12 +31,20 @@
         socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
             textarea.value = data.doc.body;
-
+            title.value = data.doc.title;
         });
 
-        function onKeyUp(e) {
+        function onKeyUpTitle(e) {
             socket.send(JSON.stringify({
-                "command": "update-doc",
+                "command": "update-doc-title",
+                "id": parseInt(docID),
+                "title": e.value,
+            }));
+        }
+
+        function onKeyUpBody(e) {
+            socket.send(JSON.stringify({
+                "command": "update-doc-body",
                 "id": parseInt(docID),
                 "body": e.value,
             }));

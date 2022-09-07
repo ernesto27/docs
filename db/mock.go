@@ -21,6 +21,10 @@ func (m *Mock) GetDocByID(ID int) (structs.Doc, error) {
 	return structs.Doc{}, nil
 }
 
-func (m *Mock) UpdateDocByID(ID int, body string) (int, error) {
+func (m *Mock) UpdateDocBodyByID(ID int, body string) (int, error) {
+	return 0, nil
+}
+
+func (m *Mock) UpdateDocTitleByID(ID int, title string) (int, error) {
 	return 0, nil
 }
