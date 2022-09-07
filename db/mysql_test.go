@@ -18,7 +18,8 @@ func init() {
 		log.Fatal("Error loading .env file")
 	}
 	myDb = Mysql{}
-	myDb.New(os.Getenv("DATABASE_USER"), os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_PORT"), os.Getenv("DATABASE_NAME"))
+	myDb.New(os.Getenv("DATABASE_USER_TEST"), os.Getenv("DATABASE_PASSWORD_TEST"),
+		os.Getenv("DATABASE_HOST_TEST"), os.Getenv("DATABASE_PORT_TEST"), os.Getenv("DATABASE_NAME_TEST"))
 
 }
 
