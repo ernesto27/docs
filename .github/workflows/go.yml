@@ -9,6 +9,11 @@ jobs:
 
   build:
     runs-on: ubuntu-20.04
+    
+    env:
+      DATABASE_HOST_TEST: 127.0.0.1
+      DATABASE_PORT_TEST: 3306
+      
     steps:
     - uses: actions/checkout@v3
     
