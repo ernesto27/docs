@@ -27,6 +27,7 @@ jobs:
           echo DATABASE_PORT_TEST=3306 >> .env
           echo DATABASE_NAME_TEST=docs >> .env
           cat .env
+          cat ls
           
     - name: 'Setup mysql'
       run: |
