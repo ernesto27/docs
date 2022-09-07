@@ -27,6 +27,12 @@ jobs:
           echo DATABASE_PORT_TEST=3306 >> .env
           echo DATABASE_NAME_TEST=docs >> .env
           cat .env
+          
+    - name: 'Setup mysql'
+      run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE docs;' -uroot -proot
+          mysql -e 'SHOW DATABASES;' -uroot -proot
 
     - name: Build
       run: go build -v ./...
