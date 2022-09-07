@@ -9,10 +9,6 @@ jobs:
 
   build:
     runs-on: ubuntu-20.04
-    
-    env:
-      DATABASE_HOST_TEST: 127.0.0.1
-      DATABASE_PORT_TEST: 3306
       
     steps:
     - uses: actions/checkout@v3
@@ -20,8 +16,8 @@ jobs:
     - name: 'Create env file'
       run: |
           touch .env
-          echo DATABASE_USER_TEST=uroot >> .env
-          echo DATABASE_PASSWORD_TEST=proot >> .env
+          echo DATABASE_USER_TEST=root >> .env
+          echo DATABASE_PASSWORD_TEST=root >> .env
           echo DATABASE_HOST_TEST=127.0.0.1 >> .env
           echo DATABASE_PORT_TEST=3306 >> .env
           echo DATABASE_NAME_TEST=docs >> .env
