@@ -29,6 +29,7 @@ jobs:
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE docs;' -uroot -proot
           mysql -e 'SHOW DATABASES;' -uroot -proot
+          mysql -e 'CREATE TABLE docs (id INT PRIMARY KEY AUTO_INCREMENT,title TEXT NOT NULL,body TEXT NOT NULL,created_at TIMESTAMP NOT NULL DEFAULT NOW(), updated_at TIMESTAMP NOT NULL DEFAULT NOW());' -uroot -proot
           mysql -V
     
     
