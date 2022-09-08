@@ -12,7 +12,7 @@ type Mysql struct {
 	db sql.DB
 }
 
-func (m *Mysql) New(user string, password string, host string, port string, name string) (error, *sql.DB) {
+func New(user string, password string, host string, port string, name string) (Mysql, error) {
 
 	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user,
 		password, host, port, name)
@@ -20,12 +20,12 @@ func (m *Mysql) New(user string, password string, host string, port string, name
 	defer db.Close()
 
 	if err != nil {
-		return err, nil
+		return Mysql{}, err
 	}
 
-	m.db = *db
-
-	return nil, db
+	return Mysql{
+		db: *db,
+	}, nil
 }
 
 func (m *Mysql) CreateDoc(doc structs.Doc) (int, error) {

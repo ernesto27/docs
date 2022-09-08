@@ -17,10 +17,12 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	myDb = Mysql{}
-	myDb.New(os.Getenv("DATABASE_USER_TEST"), os.Getenv("DATABASE_PASSWORD_TEST"),
+	var errNew error
+	myDb, errNew = New(os.Getenv("DATABASE_USER_TEST"), os.Getenv("DATABASE_PASSWORD_TEST"),
 		os.Getenv("DATABASE_HOST_TEST"), os.Getenv("DATABASE_PORT_TEST"), os.Getenv("DATABASE_NAME_TEST"))
-
+	if errNew != nil {
+		log.Fatal(errNew)
+	}
 }
 
 func TestGetDocById(t *testing.T) {
