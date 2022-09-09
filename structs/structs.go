@@ -45,3 +45,8 @@ type ResponseUsersConnected struct {
 	Command string   `json:"command"`
 	Users   []Client `json:"users"`
 }
+
+type ResponseError struct {
+	Command string `json:"command"`
+	Error   string `json:"error"`
+}

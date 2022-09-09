@@ -23,6 +23,7 @@ var upgrader = websocket.Upgrader{
 
 var broadcastDoc = make(chan structs.Doc)
 var chanDocID = make(chan int)
+var chanUserID = make(chan int)
 
 func init() {
 	wss = structs.WebsocketServer{
@@ -69,10 +70,10 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 			fmt.Println("COMMAND WS", command)
 			NewUserConnected(id, command)
 			// TODO CHECK ID IS INT, PREVENT CRASH
-			getDoc(db, command)
+			getDoc(db, id, command)
 			break
 		case "update-doc-body":
-			updateDocBody(db, command)
+			updateDocBody(db, id, command)
 			break
 		case "update-doc-title":
 			updateDocTitle(db, command)
@@ -96,11 +97,12 @@ func updateDocTitle(db interfaces.DocDB, command structs.Command) {
 	}
 }
 
-func updateDocBody(db interfaces.DocDB, command structs.Command) {
+func updateDocBody(db interfaces.DocDB, id int, command structs.Command) {
 	fmt.Println("UPDATE DOC")
 	rows, err := db.UpdateDocBodyByID(command.ID, command.Body)
 	if rows == 0 || err != nil {
 		fmt.Println(err)
+		chanUserID <- id
 	} else {
 		doc, err := db.GetDocByID(command.ID)
 		if err != nil {
@@ -111,11 +113,12 @@ func updateDocBody(db interfaces.DocDB, command structs.Command) {
 	}
 }
 
-func getDoc(db interfaces.DocDB, command structs.Command) {
+func getDoc(db interfaces.DocDB, id int, command structs.Command) {
 	fmt.Println("GET DOC")
 	doc, err := db.GetDocByID(command.ID)
 	if err != nil {
 		fmt.Println(err)
+		chanUserID <- id
 	} else {
 		broadcastDoc <- doc
 	}
@@ -173,6 +176,25 @@ func BroadcastUsersConnected() {
 					delete(wss.Clients, client.ID)
 				}
 			}
+		}
+	}
+}
+
+func BroadcastError() {
+	for {
+		userID := <-chanUserID
+		fmt.Println("BROADCAST ERROR")
+		responseError := structs.ResponseError{
+			Command: "error",
+			Error:   "Error ocurred, please try again",
+		}
+
+		client := wss.Clients[userID]
+		errWebsocket := client.WebSocketConn.WriteJSON(responseError)
+		if errWebsocket != nil {
+			log.Printf("error: %v", errWebsocket)
+			client.WebSocketConn.Close()
+			delete(wss.Clients, client.ID)
 		}
 	}
 }

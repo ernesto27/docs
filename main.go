@@ -47,6 +47,7 @@ func main() {
 
 	go routers.BroadcastDocByID()
 	go routers.BroadcastUsersConnected()
+	go routers.BroadcastError()
 
 	r.Run()
 
