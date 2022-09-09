@@ -20,8 +20,9 @@ type ResponseApi struct {
 }
 
 type Client struct {
-	ID            int
-	WebSocketConn *websocket.Conn
+	ID            int             `json:"id"`
+	WebSocketConn *websocket.Conn `json:"-"`
+	DocID         int
 }
 
 type WebsocketServer struct {
@@ -38,4 +39,9 @@ type Command struct {
 type ResponseDocByID struct {
 	Command string `json:"command"`
 	Doc     Doc    `json:"doc"`
+}
+
+type ResponseUsersConnected struct {
+	Command string   `json:"command"`
+	Users   []Client `json:"users"`
 }

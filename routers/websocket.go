@@ -22,6 +22,7 @@ var upgrader = websocket.Upgrader{
 }
 
 var broadcastDoc = make(chan structs.Doc)
+var chanDocID = make(chan int)
 
 func init() {
 	wss = structs.WebsocketServer{
@@ -31,7 +32,6 @@ func init() {
 
 func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db interfaces.DocDB) {
 	fmt.Println("Handle websocket connection")
-
 	rand.Seed(time.Now().UnixNano())
 	id := rand.Int()
 
@@ -43,6 +43,7 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 	defer conn.Close()
 
 	client := structs.Client{
+		ID:            id,
 		WebSocketConn: conn,
 	}
 	wss.Clients[id] = client
@@ -50,6 +51,9 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 	for {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
+			docID := wss.Clients[id].DocID
+			delete(wss.Clients, id)
+			chanDocID <- docID
 			log.Println("Error during message reading:", err)
 			break
 		}
@@ -60,58 +64,68 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request, c *gin.Context, db
 			log.Fatal(err)
 		}
 
-		fmt.Println("COMMAND WS", command)
-
 		switch command.Command {
 		case "get-doc":
-			fmt.Println("GET DOC")
+			fmt.Println("COMMAND WS", command)
+			NewUserConnected(id, command)
 			// TODO CHECK ID IS INT, PREVENT CRASH
-			doc, err := db.GetDocByID(command.ID)
-			if err != nil {
-				// TODO SEND ERROR MESSAGE
-				fmt.Println(err)
-			} else {
-				// TODO SEND ONLY TO USER CONNECT FIRST TIME
-				broadcastDoc <- doc
-			}
-
+			getDoc(db, command)
 			break
 		case "update-doc-body":
-			fmt.Println("UPDATE DOC")
-			rows, err := db.UpdateDocBodyByID(command.ID, command.Body)
-			if rows == 0 || err != nil {
-				// TODO SEND ERROR MESSAGE
-				fmt.Println(err)
-			} else {
-				doc, err := db.GetDocByID(command.ID)
-				if err != nil {
-					// TODO SEND ERROR MESSAGE
-					fmt.Println(err)
-					return
-				} else {
-					broadcastDoc <- doc
-				}
-			}
+			updateDocBody(db, command)
 			break
-
 		case "update-doc-title":
-			fmt.Println("UPDATE DOC TITLE")
-			rows, err := db.UpdateDocTitleByID(command.ID, command.Title)
-			if rows == 0 || err != nil {
-				// TODO SEND ERROR MESSAGE
-				fmt.Println(err)
-			} else {
-				doc, err := db.GetDocByID(command.ID)
-				if err != nil {
-					// TODO SEND ERROR MESSAGE
-					fmt.Println(err)
-				} else {
-					broadcastDoc <- doc
-				}
-			}
+			updateDocTitle(db, command)
 			break
 		}
 	}
+}
+
+func updateDocTitle(db interfaces.DocDB, command structs.Command) {
+	fmt.Println("UPDATE DOC TITLE")
+	rows, err := db.UpdateDocTitleByID(command.ID, command.Title)
+	if rows == 0 || err != nil {
+		fmt.Println(err)
+	} else {
+		doc, errDoc := db.GetDocByID(command.ID)
+		if errDoc != nil {
+			fmt.Println(errDoc)
+		} else {
+			broadcastDoc <- doc
+		}
+	}
+}
+
+func updateDocBody(db interfaces.DocDB, command structs.Command) {
+	fmt.Println("UPDATE DOC")
+	rows, err := db.UpdateDocBodyByID(command.ID, command.Body)
+	if rows == 0 || err != nil {
+		fmt.Println(err)
+	} else {
+		doc, err := db.GetDocByID(command.ID)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			broadcastDoc <- doc
+		}
+	}
+}
+
+func getDoc(db interfaces.DocDB, command structs.Command) {
+	fmt.Println("GET DOC")
+	doc, err := db.GetDocByID(command.ID)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		broadcastDoc <- doc
+	}
+}
+
+func NewUserConnected(id int, command structs.Command) {
+	currentClient := wss.Clients[id]
+	currentClient.DocID = command.ID
+	wss.Clients[id] = currentClient
+	chanDocID <- command.ID
 }
 
 func BroadcastDocByID() {
@@ -127,7 +141,37 @@ func BroadcastDocByID() {
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.WebSocketConn.Close()
-				// delete(clients, wss.Clients[1].WebSocketConn)
+				delete(wss.Clients, client.ID)
+			}
+		}
+	}
+}
+
+func BroadcastUsersConnected() {
+	for {
+		docID := <-chanDocID
+		fmt.Println("BROADCAST USERS CONNECTED")
+
+		users := []structs.Client{}
+
+		for _, client := range wss.Clients {
+			if client.DocID == docID {
+				users = append(users, client)
+			}
+		}
+		responseUsersConnected := structs.ResponseUsersConnected{
+			Command: "users-connected",
+			Users:   users,
+		}
+
+		for _, client := range wss.Clients {
+			if client.DocID == docID {
+				err := client.WebSocketConn.WriteJSON(responseUsersConnected)
+				if err != nil {
+					log.Printf("error: %v", err)
+					client.WebSocketConn.Close()
+					delete(wss.Clients, client.ID)
+				}
 			}
 		}
 	}

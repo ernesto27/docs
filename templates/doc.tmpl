@@ -10,6 +10,10 @@
 
     <h1>Detail doc <span id="doc-id">{{ .id }}</span></h1>
 
+    Users connected
+    <ul id="users-list">
+    </ul>
+
     <input type="text" id="title" onkeyup="onKeyUpTitle(this)"/>
     <br /><br />
     <textarea id="textarea" onkeyup="onKeyUpBody(this)"></textarea>
@@ -18,6 +22,7 @@
         const socket = new WebSocket("ws://localhost:8080/ws");
         const title= document.getElementById("title");
         const textarea = document.getElementById("textarea");
+        const userList = document.getElementById("users-list");
         const docID = document.getElementById("doc-id").innerText;
 
         socket.addEventListener('open', (event) => {
@@ -30,8 +35,23 @@
 
         socket.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
-            textarea.value = data.doc.body;
-            title.value = data.doc.title;
+            if (data.command === 'get-doc') {
+                title.value = data.doc.title;
+                textarea.value = data.doc.body;
+            }
+            
+            if (data.command === 'users-connected') {
+                // clear list
+                userList.innerHTML = "";
+                console.log(data);
+                for (let i = 0; i < data.users.length; i++) {
+                    const user = data.users[i];
+                    var li = document.createElement("li");
+                    li.appendChild(document.createTextNode(user.id));
+                    userList.appendChild(li);
+                }
+                
+            }
         });
 
         function onKeyUpTitle(e) {
