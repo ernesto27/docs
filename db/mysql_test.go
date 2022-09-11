@@ -19,7 +19,7 @@ func init() {
 	}
 	var errNew error
 	myDb, errNew = New(os.Getenv("DATABASE_USER_TEST"), os.Getenv("DATABASE_PASSWORD_TEST"),
-		os.Getenv("DATABASE_HOST_TEST"), os.Getenv("DATABASE_PORT_TEST"), os.Getenv("DATABASE_NAME_TEST"))
+		os.Getenv("DATABASE_HOST_TEST"), os.Getenv("DATABASE_PORT_TEST"), os.Getenv("DATABASE_NAME_TEST"), "")
 	if errNew != nil {
 		log.Fatal(errNew)
 	}

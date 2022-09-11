@@ -18,7 +18,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	myDb, errNew := db.New(os.Getenv("DATABASE_USER"), os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_PORT"), os.Getenv("DATABASE_NAME"))
+	myDb, errNew := db.New(os.Getenv("DATABASE_USER"), os.Getenv("DATABASE_PASSWORD"),
+		os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_PORT"), os.Getenv("DATABASE_NAME"), os.Getenv("DATABASE_TLS"))
 	if errNew != nil {
 		log.Fatal(errNew)
 	}

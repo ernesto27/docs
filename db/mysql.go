@@ -12,10 +12,10 @@ type Mysql struct {
 	db sql.DB
 }
 
-func New(user string, password string, host string, port string, name string) (Mysql, error) {
+func New(user string, password string, host string, port string, name string, tls string) (Mysql, error) {
 
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user,
-		password, host, port, name)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s%s", user,
+		password, host, port, name, tls)
 	db, err := sql.Open("mysql", dataSourceName)
 	defer db.Close()
 
@@ -29,12 +29,24 @@ func New(user string, password string, host string, port string, name string) (M
 }
 
 func (m *Mysql) CreateDoc(doc structs.Doc) (int, error) {
+	tx, errTransaction := m.db.Begin()
+	if errTransaction != nil {
+		return 0, errTransaction
+	}
+
 	query := "INSERT INTO docs (title, body) VALUES (?, ?)"
-	res, err := m.db.Exec(query, doc.Title, doc.Body)
+	res, err := tx.Exec(query, doc.Title, doc.Body)
+	if err != nil {
+		tx.Rollback()
+		return 0, err
+	}
 	id, errID := res.LastInsertId()
 	if errID != nil {
+		tx.Rollback()
 		return 0, errID
 	}
+
+	tx.Commit()
 	return int(id), err
 }
 

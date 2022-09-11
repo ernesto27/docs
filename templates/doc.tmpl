@@ -42,7 +42,6 @@
             }
             
             if (data.command === 'users-connected') {
-                // clear list
                 userList.innerHTML = "";
                 for (let i = 0; i < data.users.length; i++) {
                     const user = data.users[i];
@@ -54,21 +53,34 @@
             }
         });
 
+        let debounceTimer;
+        const debounce = (callback, time) => {
+            window.clearTimeout(debounceTimer);
+            debounceTimer = window.setTimeout(() => {
+                callback();
+            }, time);
+        };
+
         function onKeyUpTitle(e) {
-            socket.send(JSON.stringify({
-                "command": "update-doc-title",
-                "id": parseInt(docID),
-                "title": e.value,
-            }));
+            debounce(() => {
+                socket.send(JSON.stringify({
+                    "command": "update-doc-title",
+                    "id": parseInt(docID),
+                    "title": e.value,
+                }));
+            }, 500);            
         }
 
         function onKeyUpBody(e) {
-            socket.send(JSON.stringify({
-                "command": "update-doc-body",
-                "id": parseInt(docID),
-                "body": e.value,
-            }));
+            debounce(() => {
+                socket.send(JSON.stringify({
+                    "command": "update-doc-body",
+                    "id": parseInt(docID),
+                    "body": e.value,
+                }));
+            },500)
         }
+
         
 
         
